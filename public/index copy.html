@@ -1,0 +1,39 @@
+<script src="https://pay.google.com/gp/p/js/pay.js"></script>
+<div id="add-to-google-wallet"></div>
+
+<script>
+  // Replace with your backend endpoint that generates the JWT
+  const jwtUrl = 'http://localhost:3000/generate-pass'; 
+
+  async function getJwt() {
+    const response = await fetch(jwtUrl);
+    const data = await response.json();
+    return data.jwt;
+  }
+
+  async function initGoogleWalletButton() {
+    const jwt = await getJwt(); // Fetch the JWT from your backend
+  
+    const gpayClient = new google.payments.api.PaymentsClient({ environment: 'TEST' });
+ 
+    // Create the "Add to Google Wallet" button
+    const savePassesButton = gpayClient.createButton({
+      onClick: async () => {
+        try {
+          console.log(gpayClient);
+          // Add the pass to Google Wallet using the JWT
+          const result = await gpayClient.savePasses({ issuerJwt: jwt });
+          console.log('Pass successfully added:', result);
+        } catch (error) {
+          console.error('Error adding pass:', error);
+        }
+      },
+    });
+
+    // Add the button to your page
+    document.getElementById('add-to-google-wallet').appendChild(savePassesButton);
+  }
+
+  // Initialize the Google Wallet button
+  initGoogleWalletButton();
+</script>

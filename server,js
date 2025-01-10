@@ -1,0 +1,63 @@
+const express = require('express');
+const bodyParser = require('body-parser');
+const fs = require('fs');
+const path = require('path');
+const { PassGenerator } = require('passkit-generator');
+
+// App setup
+const app = express();
+app.use(bodyParser.json());
+
+// Certificates and keys
+const certificatePath = path.join(__dirname, 'certificates', 'certificate.pem');
+const keyPath = path.join(__dirname, 'certificates', 'key.pem');
+
+// Route to generate and serve a pass
+app.get('/generate-pass', async (req, res) => {
+  try {
+    const pass = new PassGenerator({
+      passTypeIdentifier: 'pass.com.example.event', // Replace with your Pass Type ID
+      teamIdentifier: 'YOUR_TEAM_ID', // Replace with your Apple Team ID
+      organizationName: 'Example Organization',
+      description: 'Event Ticket',
+      serialNumber: '1234567890',
+      logoText: 'My Event',
+      foregroundColor: 'rgb(255,255,255)',
+      backgroundColor: 'rgb(0,0,0)',
+      barcode: {
+        message: '1234567890',
+        format: 'PKBarcodeFormatQR',
+        messageEncoding: 'iso-8859-1',
+      },
+      certificates: {
+        wwdr: fs.readFileSync(certificatePath),
+        signerCert: fs.readFileSync(certificatePath),
+        signerKey: {
+          keyFile: keyPath,
+          passphrase: '', // Add passphrase if your key is encrypted
+        },
+      },
+    });
+
+    // Add images
+    pass.images.add('icon', fs.readFileSync(path.join(__dirname, 'images', 'icon.png')));
+    pass.images.add('logo', fs.readFileSync(path.join(__dirname, 'images', 'logo.png')));
+
+    // Generate the pass
+    const pkpass = await pass.generate();
+
+    // Set response headers and serve the pass
+    res.setHeader('Content-Type', 'application/vnd.apple.pkpass');
+    res.setHeader('Content-Disposition', 'attachment; filename=event.pkpass');
+    res.send(pkpass);
+  } catch (error) {
+    console.error('Error generating pass:', error);
+    res.status(500).send('An error occurred while generating the pass.');
+  }
+});
+
+// Start the server
+const PORT = 3000;
+app.listen(PORT, () => {
+  console.log(`Server running at http://localhost:${PORT}`);
+});

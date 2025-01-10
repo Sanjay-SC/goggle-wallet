@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add to Google Wallet</title>
+</head>
+<body>
+  <h1>Google Wallet Integration</h1>
+  <div  style="width:100px">
+    <div id="wallet-button-container">
+      Loading...
+    </div>
+  </div>
+  <!-- Placeholder for the Wallet button -->
+ 
+
+  <script>
+    // Fetch the saveUrl dynamically from the backend
+    async function loadWalletButton() {
+      try {
+        const response = await fetch('/generate-save-url');
+        const data = await response.json();
+        const walletButtonContainer = document.getElementById('wallet-button-container');
+
+        if (data.saveUrl) {
+          walletButtonContainer.innerHTML = `
+            <a href="${data.saveUrl}">
+              <img style="width:200px" src="wallet-button.png" alt="Add to Google Wallet" />
+            </a>
+          `;
+        } else {
+          walletButtonContainer.textContent = 'Failed to load the Add to Wallet button.';
+        }
+      } catch (error) {
+        console.error('Error fetching saveUrl:', error);
+        document.getElementById('wallet-button-container').textContent = 'Error loading button.';
+      }
+    }
+
+    // Load the button when the page is loaded
+    loadWalletButton();
+  </script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "body-parser": "^1.20.3",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "google-auth-library": ">=5.9.2",
+    "jsonwebtoken": ">=8.5.1",
+    "passkit-generator": "^3.2.0"
+  }
+}
